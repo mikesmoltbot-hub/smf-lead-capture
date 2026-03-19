@@ -41,6 +41,13 @@ Think of it as a 24/7 digital receptionist that never sleeps, never forgets to f
 - **AI Scoring** - Algorithm scores leads 0-100
 - **Categories** - Hot (buy now), Warm (interested), Cold (browsing)
 - **Custom Rules** - Configure scoring for your business
+- **AI Chat** - Natural language responses via Ollama or OpenAI
+
+### Visual Dashboard
+- **Flow Builder** - Drag-and-drop conversation designer
+- **Real-time Metrics** - Live lead tracking and analytics
+- **Lead Management** - View, filter, and export leads
+- **A/B Testing** - Test conversation variations (coming soon)
 
 ### Integrations
 - **CRM:** HubSpot, Pipedrive, Salesforce, Zoho

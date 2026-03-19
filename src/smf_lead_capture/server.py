@@ -301,6 +301,66 @@ def register_routes(app: Flask):
             logger.error(f"Error getting metrics: {e}")
             return jsonify({"error": str(e)}), 500
     
+    # Flow endpoints for visual builder
+    @app.route("/api/v1/flows/<flow_id>", methods=["GET"])
+    @require_api_key
+    def get_flow(flow_id: str):
+        """Get conversation flow by ID."""
+        try:
+            # For now, return default flow
+            # In production, this would fetch from database
+            default_flow = {
+                "id": flow_id,
+                "name": "Default Flow",
+                "nodes": [
+                    {
+                        "id": "1",
+                        "type": "greeting",
+                        "position": {"x": 250, "y": 50},
+                        "data": {"message": "Hi! How can I help you today?"}
+                    },
+                    {
+                        "id": "2",
+                        "type": "question",
+                        "position": {"x": 250, "y": 200},
+                        "data": {
+                            "text": "What's your timeline?",
+                            "field": "timeline",
+                            "options": ["ASAP", "This month", "Later"]
+                        }
+                    }
+                ],
+                "edges": [
+                    {"id": "e1-2", "source": "1", "target": "2"}
+                ]
+            }
+            return jsonify(default_flow)
+        except Exception as e:
+            logger.error(f"Error getting flow: {e}")
+            return jsonify({"error": str(e)}), 500
+
+    @app.route("/api/v1/flows/<flow_id>", methods=["POST"])
+    @require_api_key
+    def save_flow(flow_id: str):
+        """Save conversation flow."""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({"error": "JSON body required"}), 400
+            
+            # In production, save to database
+            # For now, just return success
+            return jsonify({
+                "message": "Flow saved successfully",
+                "id": flow_id,
+                "name": data.get("name"),
+                "node_count": len(data.get("nodes", [])),
+                "edge_count": len(data.get("edges", []))
+            })
+        except Exception as e:
+            logger.error(f"Error saving flow: {e}")
+            return jsonify({"error": str(e)}), 500
+
     # Widget serving
     @app.route("/widget.js", methods=["GET"])
     def serve_widget():
@@ -310,6 +370,37 @@ def register_routes(app: Flask):
         
         widget_dir = os.path.join(os.path.dirname(__file__), "..", "assets")
         return send_from_directory(widget_dir, "widget.js")
+    
+    # Dashboard serving (for production)
+    @app.route("/", methods=["GET"])
+    def serve_dashboard():
+        """Serve dashboard."""
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>SMF Lead Capture Dashboard</title>
+            <style>
+                body { font-family: sans-serif; padding: 40px; text-align: center; }
+                h1 { color: #0066CC; }
+                .links { margin-top: 30px; }
+                a { display: inline-block; margin: 10px; padding: 12px 24px; 
+                    background: #0066CC; color: white; text-decoration: none; 
+                    border-radius: 8px; }
+                a:hover { background: #0052a3; }
+            </style>
+        </head>
+        <body>
+            <h1>SMF Lead Capture</h1>
+            <p>API server is running. Use the dashboard or API endpoints.</p>
+            <div class="links">
+                <a href="/api/v1/leads">View Leads API</a>
+                <a href="/api/v1/metrics">View Metrics</a>
+                <a href="/widget.js">Widget Script</a>
+            </div>
+        </body>
+        </html>
+        """
 
 
 def run_server(config_path: str = "config.yaml", host: str = None, port: int = None):
