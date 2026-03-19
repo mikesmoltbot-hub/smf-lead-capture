@@ -117,6 +117,26 @@ function App() {
             Integration Hub
           </NavLink>
           
+          <a
+            href="http://localhost:3000"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 16px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              color: '#888',
+              fontSize: '14px',
+              marginTop: '8px'
+            }}
+          >
+            <LayoutDashboard size={18} />
+            SMF Dashboard
+          </a>
+          
           <NavLink
             to="/settings"
             style={({ isActive }) => ({
