@@ -97,7 +97,7 @@ Think of it as a 24/7 digital receptionist that never sleeps, never forgets to f
 
 ```bash
 # Clone the repository
-git clone https://github.com/mikesmoltbot-hub/smf-lead-capture.git
+git clone https://github.com/smfworks/smf-lead-capture.git
 cd smf-lead-capture
 
 # Install dependencies
@@ -124,7 +124,7 @@ docker run -d \
   -p 5000:5000 \
   -v $(pwd)/config.yaml:/app/config.yaml \
   -v $(pwd)/data:/app/data \
-  ghcr.io/mikesmoltbot-hub/smf-lead-capture:latest
+  ghcr.io/smfworks/smf-lead-capture:latest
 ```
 
 ### OpenClaw Skill Installation
@@ -134,7 +134,7 @@ docker run -d \
 clawhub install smf-lead-capture
 
 # Or from GitHub
-clawhub install https://github.com/mikesmoltbot-hub/smf-lead-capture
+clawhub install https://github.com/smfworks/smf-lead-capture
 ```
 
 ## Configuration
@@ -346,7 +346,7 @@ OPENCLAW_AGENT_ID=smf-lead-capture
 
 ```bash
 # Clone repo
-git clone https://github.com/mikesmoltbot-hub/smf-lead-capture.git
+git clone https://github.com/smfworks/smf-lead-capture.git
 cd smf-lead-capture
 
 # Create virtual environment
@@ -482,7 +482,7 @@ sudo systemctl start smf-lead-capture
 ## Support
 
 - **Documentation:** https://docs.smfworks.com/smf-lead-capture
-- **Issues:** https://github.com/mikesmoltbot-hub/smf-lead-capture/issues
+- **Issues:** https://github.com/smfworks/smf-lead-capture/issues
 - **Email:** michael@smfworks.com
 
 ## License

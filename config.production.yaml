@@ -1,0 +1,260 @@
+# SMF Lead Capture - Production Configuration for SMF Works
+# This is the live configuration for smfworks.com
+
+server:
+  host: "0.0.0.0"
+  port: 5000
+  debug: false
+  secret_key: "${SECRET_KEY}"
+  cors_origins:
+    - "https://smfworks.com"
+    - "https://www.smfworks.com"
+    - "http://localhost:3000"
+
+# Database - Use SQLite for now, migrate to PostgreSQL when needed
+database:
+  url: "${DATABASE_URL:sqlite:///data/smf_leads.db}"
+
+# Chat widget configuration
+widget:
+  position: "bottom-right"
+  theme:
+    primary_color: "#0066CC"
+    background_color: "#FFFFFF"
+    text_color: "#333333"
+    greeting: "👋 Hi! How can we help you today?"
+    placeholder: "Type your message..."
+    away_message: "We're away right now, but we'll respond ASAP!"
+  
+  triggers:
+    time_on_page: 15
+    scroll_percentage: 30
+    exit_intent: true
+  
+  behavior:
+    auto_open: false
+    minimize_after: 300
+
+# Lead qualification questions for SMF Works
+qualification:
+  questions:
+    - id: "service_interest"
+      text: "What service are you interested in?"
+      field: "service"
+      type: "select"
+      required: true
+      order: 1
+      options:
+        - value: "lead_capture"
+          label: "Lead Capture System"
+          score: 10
+        - value: "ai_automation"
+          label: "AI Automation"
+          score: 10
+        - value: "custom_development"
+          label: "Custom Development"
+          score: 10
+        - value: "consulting"
+          label: "AI Consulting"
+          score: 8
+        - value: "other"
+          label: "Something Else"
+          score: 5
+    
+    - id: "timeline"
+      text: "What's your timeline?"
+      field: "timeline"
+      type: "select"
+      required: true
+      order: 2
+      options:
+        - value: "asap"
+          label: "ASAP - This week"
+          score: 10
+        - value: "this_month"
+          label: "This month"
+          score: 7
+        - value: "next_quarter"
+          label: "Next quarter"
+          score: 5
+        - value: "exploring"
+          label: "Just exploring options"
+          score: 2
+    
+    - id: "budget"
+      text: "What's your budget range?"
+      field: "budget"
+      type: "select"
+      required: true
+      order: 3
+      options:
+        - value: "under_5k"
+          label: "Under $5,000"
+          score: 3
+        - value: "5k_to_10k"
+          label: "$5,000 - $10,000"
+          score: 7
+        - value: "10k_to_25k"
+          label: "$10,000 - $25,000"
+          score: 10
+        - value: "25k_plus"
+          label: "$25,000+"
+          score: 12
+    
+    - id: "company_size"
+      text: "How big is your team?"
+      field: "team_size"
+      type: "select"
+      required: false
+      order: 4
+      options:
+        - value: "solo"
+          label: "Just me"
+          score: 5
+        - value: "small"
+          label: "2-10 people"
+          score: 7
+        - value: "medium"
+          label: "11-50 people"
+          score: 8
+        - value: "large"
+          label: "50+ people"
+          score: 10
+
+# Scoring configuration
+scoring:
+  thresholds:
+    hot: 25
+    warm: 15
+    cold: 0
+  bonuses:
+    - condition: "source == 'referral'"
+      points: 10
+    - condition: "email_domain in ['smfworks.com']"
+      points: 5
+
+# Actions for lead routing
+actions:
+  hot_lead:
+    - notify:
+        channels: ["email", "sms"]
+        template: "hot_lead_alert"
+    - create_crm_entry:
+        provider: "hubspot"
+        pipeline: "sales"
+        stage: "qualified"
+    - add_to_sequence:
+        sequence: "hot_lead_nurture"
+        delay: "immediate"
+    - create_task:
+        title: "Follow up with hot lead"
+        due_hours: 2
+  
+  warm_lead:
+    - notify:
+        channels: ["email"]
+        template: "new_lead_notification"
+    - create_crm_entry:
+        provider: "hubspot"
+        pipeline: "sales"
+        stage: "new"
+    - add_to_sequence:
+        sequence: "warm_lead_nurture"
+        delay: "24_hours"
+  
+  cold_lead:
+    - add_to_sequence:
+        sequence: "cold_lead_nurture"
+        delay: "24_hours"
+  
+  all_leads:
+    - send_confirmation:
+        template: "thanks_for_reaching_out"
+    - analytics:
+        event: "lead_captured"
+
+# ML Scoring
+ml_scoring:
+  enabled: true
+  model_path: "models/lead_scorer.pkl"
+  thresholds:
+    hot: 70
+    warm: 40
+    cold: 0
+  training:
+    auto_train: false
+    min_samples: 100
+
+# Smart Routing
+smart_routing:
+  enabled: true
+  business_hours:
+    timezone: "America/New_York"
+    start: "09:00"
+    end: "18:00"
+    days: [1, 2, 3, 4, 5]
+  after_hours:
+    auto_reply: true
+    message: "Thanks for reaching out! We're currently out of office but will respond within 24 hours. For urgent requests, please call us."
+    capture_lead: true
+
+# Channels (disabled for now, will enable after testing)
+channels:
+  whatsapp:
+    enabled: false
+  messenger:
+    enabled: false
+  telegram:
+    enabled: false
+
+# Integrations (configure with real credentials)
+integrations:
+  crm:
+    provider: "hubspot"
+    api_key: "${HUBSPOT_API_KEY}"
+    mappings:
+      email: "email"
+      first_name: "firstname"
+      last_name: "lastname"
+      phone: "phone"
+      company: "company"
+      lead_source: "source"
+      lead_score: "hs_lead_score"
+  
+  notifications:
+    email:
+      provider: "sendgrid"
+      api_key: "${SENDGRID_API_KEY}"
+      from_name: "SMF Works"
+      from_email: "leads@smfworks.com"
+      to: "${OWNER_EMAIL}"
+    
+    sms:
+      provider: "twilio"
+      account_sid: "${TWILIO_ACCOUNT_SID}"
+      auth_token: "${TWILIO_AUTH_TOKEN}"
+      from_number: "${TWILIO_PHONE_NUMBER}"
+      to: "${OWNER_PHONE}"
+
+# Security
+security:
+  api_keys:
+    - "${API_KEY}"
+  rate_limit:
+    enabled: true
+    requests_per_minute: 60
+    requests_per_hour: 1000
+  webhook_secret: "${WEBHOOK_SECRET}"
+
+# AI Configuration
+advanced:
+  ai:
+    model: "ollama/qwen3.5:9b"
+    temperature: 0.7
+    max_tokens: 500
+    context_messages: 10
+    escalation:
+      - condition: "message_sentiment < -0.5"
+        action: "notify_owner"
+      - condition: "question_count > 5"
+        action: "suggest_call"
