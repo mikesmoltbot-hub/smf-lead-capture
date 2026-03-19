@@ -1,0 +1,39 @@
+# Core package
+flask==3.0.0
+flask-cors==4.0.0
+flask-limiter==3.5.0
+flask-sqlalchemy==3.1.1
+
+# Database
+sqlalchemy==2.0.23
+alembic==1.12.1
+psycopg2-binary==2.9.9
+
+# Configuration
+pyyaml==6.0.1
+python-dotenv==1.0.0
+
+# API integrations
+requests==2.31.0
+httpx==0.25.2
+
+# Email
+sendgrid==6.10.0
+
+# SMS
+twilio==8.10.0
+
+# Validation
+email-validator==2.1.0
+phonenumbers==8.13.26
+
+# Security
+bcrypt==4.1.2
+pyjwt==2.8.0
+
+# Utilities
+python-dateutil==2.8.2
+uuid==1.30
+
+# Production
+gunicorn==21.2.0

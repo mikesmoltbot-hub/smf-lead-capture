@@ -1,0 +1,272 @@
+# SMF Lead Capture - Example Configuration
+# Copy this file to config.yaml and customize for your business
+
+# Server settings
+server:
+  host: "0.0.0.0"
+  port: 5000
+  debug: false
+  secret_key: "${SECRET_KEY:change-this-in-production}"
+  cors_origins:
+    - "https://yourdomain.com"
+    - "https://www.yourdomain.com"
+
+# Database configuration
+# Supports SQLite (default) or PostgreSQL
+database:
+  url: "${DATABASE_URL:sqlite:///data/leads.db}"
+  # For PostgreSQL:
+  # url: "postgresql://user:password@localhost/smf_leads"
+
+# Chat widget settings
+widget:
+  position: "bottom-right"  # bottom-right, bottom-left, top-right, top-left
+  theme:
+    primary_color: "#0066CC"
+    background_color: "#FFFFFF"
+    text_color: "#333333"
+    greeting: "Hi! How can I help you today?"
+    placeholder: "Type your message..."
+    away_message: "We're away right now, but we'll respond ASAP!"
+  
+  # When to show the widget
+  triggers:
+    time_on_page: 30        # Show after 30 seconds
+    scroll_percentage: 50   # Show after scrolling 50%
+    exit_intent: true       # Show when user tries to leave
+  
+  # Behavior
+  behavior:
+    auto_open: false
+    minimize_after: 300     # Minimize after 5 minutes of inactivity
+
+# Lead qualification questions
+qualification:
+  questions:
+    - id: "timeline"
+      text: "What's your timeline for this project?"
+      field: "timeline"
+      type: "select"
+      required: true
+      order: 1
+      options:
+        - value: "asap"
+          label: "ASAP - This week"
+          score: 10
+        - value: "this_month"
+          label: "This month"
+          score: 7
+        - value: "next_month"
+          label: "Next few months"
+          score: 5
+        - value: "exploring"
+          label: "Just exploring options"
+          score: 2
+    
+    - id: "budget"
+      text: "What's your budget range?"
+      field: "budget"
+      type: "select"
+      required: true
+      order: 2
+      options:
+        - value: "under_5k"
+          label: "Under $5,000"
+          score: 3
+        - value: "5k_to_10k"
+          label: "$5,000 - $10,000"
+          score: 7
+        - value: "10k_to_25k"
+          label: "$10,000 - $25,000"
+          score: 9
+        - value: "over_25k"
+          label: "$25,000+"
+          score: 10
+    
+    - id: "project_description"
+      text: "Tell me a bit about your project or needs"
+      field: "description"
+      type: "text"
+      multiline: true
+      required: true
+      order: 3
+  
+  # Scoring algorithm
+  scoring:
+    algorithm: "weighted_sum"
+    thresholds:
+      hot: 18      # Score >= 18 = hot lead
+      warm: 10     # Score >= 10 = warm lead
+      cold: 0      # Score < 10 = cold lead
+    
+    # Bonus/penalty rules
+    bonuses:
+      - condition: "source == 'referral'"
+        points: 5
+        reason: "Referral leads convert better"
+      
+      - condition: "email_domain in ['gmail.com', 'outlook.com', 'yahoo.com']"
+        points: -2
+        reason: "Business emails preferred"
+
+# Actions to take based on lead score
+actions:
+  # Hot leads - Immediate attention
+  hot_lead:
+    - notify:
+        channels: ["sms", "email"]
+        immediate: true
+        template: "hot_lead_alert"
+    
+    - create_crm_entry:
+        provider: "hubspot"
+        pipeline: "sales"
+        stage: "new_lead"
+        owner: "${SALES_OWNER_EMAIL}"
+    
+    - add_to_sequence:
+        sequence: "hot_lead_nurture"
+        delay: "immediate"
+  
+  # Warm leads - Daily digest
+  warm_lead:
+    - notify:
+        channels: ["email"]
+        digest: "daily"
+        time: "17:00"
+        template: "warm_lead_digest"
+    
+    - create_crm_entry:
+        provider: "hubspot"
+        pipeline: "sales"
+        stage: "prospect"
+    
+    - add_to_sequence:
+        sequence: "warm_lead_nurture"
+        delay: "1_hour"
+  
+  # Cold leads - Newsletter only
+  cold_lead:
+    - create_crm_entry:
+        provider: "hubspot"
+        pipeline: "nurture"
+        stage: "subscriber"
+    
+    - add_to_sequence:
+        sequence: "newsletter"
+        delay: "24_hours"
+  
+  # All leads get these actions
+  all_leads:
+    - send_confirmation:
+        template: "thanks_for_reaching_out"
+    
+    - analytics:
+        event: "lead_captured"
+        properties: ["source", "score", "landing_page"]
+
+# Integrations
+integrations:
+  # CRM Integration
+  crm:
+    provider: "hubspot"  # hubspot, pipedrive, salesforce, zoho
+    api_key: "${HUBSPOT_API_KEY}"
+    
+    # Field mappings
+    mappings:
+      email: "email"
+      first_name: "firstname"
+      last_name: "lastname"
+      phone: "phone"
+      company: "company"
+      lead_source: "source"
+      lead_score: "hs_lead_score"
+      timeline: "timeline__c"
+      budget: "budget_range__c"
+      description: "project_description__c"
+    
+    # Custom properties
+    custom_properties:
+      - name: "chat_transcript"
+        value: "{{conversation_history}}"
+      - name: "landing_page"
+        value: "{{metadata.landing_page}}"
+      - name: "referrer"
+        value: "{{metadata.referrer}}"
+  
+  # Email notifications
+  notifications:
+    email:
+      provider: "sendgrid"  # sendgrid, resend, gmail
+      api_key: "${SENDGRID_API_KEY}"
+      from_name: "SMF Works"
+      from_email: "leads@smfworks.com"
+      to: "${OWNER_EMAIL}"
+    
+    sms:
+      provider: "twilio"
+      account_sid: "${TWILIO_ACCOUNT_SID}"
+      auth_token: "${TWILIO_AUTH_TOKEN}"
+      from_number: "${TWILIO_PHONE_NUMBER}"
+      to: "${OWNER_PHONE}"
+
+# Security settings
+security:
+  # API keys for authentication
+  api_keys:
+    - "${API_KEY:change-this-in-production}"
+  
+  # Rate limiting
+  rate_limit:
+    enabled: true
+    requests_per_minute: 60
+    requests_per_hour: 1000
+  
+  # Webhook security
+  webhook_secret: "${WEBHOOK_SECRET}"
+  
+  # Allowed IP addresses (empty = allow all)
+  allowed_ips: []
+
+# Advanced settings
+advanced:
+  # Rate limiting per source
+  rate_limit:
+    max_leads_per_ip: 10      # per hour
+    max_leads_per_email: 5    # per day
+    cooldown_minutes: 5
+  
+  # Spam detection
+  spam_detection:
+    enabled: true
+    honeypot_field: "website"   # Hidden field to catch bots
+    
+    blocked_domains:
+      - "tempmail.com"
+      - "10minutemail.com"
+      - "guerrillamail.com"
+    
+    blocked_keywords:
+      - "SEO services"
+      - "web design"
+      - "make money fast"
+  
+  # Data retention
+  data_retention:
+    chat_history_days: 90
+    lead_data_years: 7
+    anonymize_after_days: 365
+  
+  # AI settings (for chat responses)
+  ai:
+    model: "ollama/qwen3.5:9b"
+    temperature: 0.7
+    max_tokens: 500
+    context_messages: 10
+    
+    # Escalation triggers
+    escalation:
+      - condition: "message_sentiment < -0.5"
+        action: "notify_owner"
+      - condition: "question_count > 5"
+        action: "suggest_call"
