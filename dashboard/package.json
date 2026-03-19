@@ -1,7 +1,7 @@
 {
-  "name": "smf-lead-capture-dashboard",
+  "name": "smf-business-central",
   "version": "1.0.0",
-  "description": "Visual dashboard and flow builder for SMF Lead Capture",
+  "description": "Unified dashboard for SMF Business Suite - Lead Capture, Simple CRM, and more",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,15 +9,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.6.0",
+    "date-fns": "^2.30.0",
+    "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0",
     "react-flow-renderer": "^10.3.17",
+    "react-router-dom": "^6.20.0",
+    "reactflow": "^11.11.4",
     "recharts": "^2.10.0",
-    "axios": "^1.6.0",
-    "socket.io-client": "^4.7.0",
-    "date-fns": "^2.30.0",
-    "lucide-react": "^0.294.0"
+    "socket.io-client": "^4.7.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

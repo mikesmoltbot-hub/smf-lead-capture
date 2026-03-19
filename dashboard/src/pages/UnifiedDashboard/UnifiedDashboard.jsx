@@ -31,7 +31,7 @@ function UnifiedDashboard() {
           <Layers size={32} color="#9b59b6" />
           Unified Dashboard
         </h1>
-        <p style={{ color: '#666' }}>Overview of all your SMF business tools</p>
+        <p style={{ color: '#666' }}>Your central hub for the SMF Business Suite</p>
       </div>
 
       {/* System Cards */}

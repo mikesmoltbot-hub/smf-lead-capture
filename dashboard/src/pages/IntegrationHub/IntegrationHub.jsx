@@ -151,7 +151,7 @@ function SummaryCard({ title, value, total, color }) {
       borderLeft: `4px solid ${color}`
     }}>
       <p style={{ color: '#666', fontSize: '14px', marginBottom: '8px' }}>{title}</p>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
         <p style={{ fontSize: '32px', fontWeight: 700 }}>{value}</p>
         {total && <span style={{ color: '#888' }}>/ {total}</span>}
       </div>
