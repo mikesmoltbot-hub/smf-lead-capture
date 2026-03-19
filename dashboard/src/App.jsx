@@ -211,7 +211,7 @@ function UnifiedNav() {
         })}
       >
         <LayoutDashboard size={18} />
-        Dashboard
+        Biz Central
       </NavLink>
     </div>
   )
